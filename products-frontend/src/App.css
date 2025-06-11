@@ -1,0 +1,160 @@
+/* products-frontend/src/App.css */
+
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.App-header h1 {
+  margin: 0;
+}
+
+.App-header nav button {
+  background-color: #61dafb;
+  color: #282c34;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+.App-header nav button:hover {
+  background-color: #21a1f1;
+}
+
+main {
+  padding: 20px;
+}
+
+/* Contenedor general para formularios de login/registro/producto */
+.login-container, .product-form, .edit-form {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: left; /* Alinea el contenido a la izquierda dentro del contenedor */
+}
+
+/* Títulos dentro de los contenedores */
+.login-container h2 {
+    text-align: center; /* Centra el título "Iniciar Sesión" o "Crear Usuario y Contraseña" */
+    margin-bottom: 20px; /* Espacio debajo del título */
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input {
+  /* Modificado: Usar 100% y box-sizing para que funcione consistentemente */
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Muy importante para que padding y border no excedan el 100% de ancho */
+}
+
+/* Estilo general para todos los botones, se sobrescribe en contextos específicos */
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+  margin-right: 10px; /* Espacio entre botones */
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Mensajes de error */
+.error-message {
+  color: red;
+  margin-top: 10px;
+  text-align: center; /* Centrar el mensaje de error */
+}
+
+/* NUEVO: Mensaje de éxito */
+.success-message {
+    color: green;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* NUEVO: Estilo para los enlaces de login/registro debajo de los formularios */
+.login-link { /* Usamos la misma clase para ambos enlaces */
+    margin-top: 20px; /* Espacio entre el botón y el enlace */
+    text-align: center;
+    font-size: 0.9em; /* Texto un poco más pequeño */
+}
+
+.login-link a {
+    color: #007bff; /* Color azul del enlace */
+    text-decoration: none; /* Sin subrayado por defecto */
+    font-weight: bold; /* Texto en negrita, como en la captura */
+}
+
+.login-link a:hover {
+    text-decoration: underline; /* Subrayado al pasar el ratón */
+}
+
+
+.product-list {
+  list-style: none;
+  padding: 0;
+}
+
+.product-item {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-actions button {
+  margin-left: 10px;
+  padding: 8px 12px;
+  font-size: 0.9em;
+}
+
+.edit-form input {
+    margin-right: 10px;
+    margin-bottom: 5px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: auto; /* Permitir que los inputs se ajusten */
+}
+
+.edit-form button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
