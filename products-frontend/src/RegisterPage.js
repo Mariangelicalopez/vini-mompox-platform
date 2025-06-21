@@ -1,16 +1,20 @@
+// products-frontend/src/RegisterPage.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './App.css'; // Asegúrate de que las clases CSS estén disponibles
 
-const API_BASE_URL = 'http://localhost:8081/api'; // ¡IMPORTANTE: Asegúrate de que este puerto sea el de tu backend de Spring Boot!
+// ¡IMPORTANTE PARA DOCKER!
+// La URL base de la API debe apuntar a la ruta /api en el mismo dominio del frontend,
+// ya que Nginx (en el contenedor del frontend) se encargará de redirigirla al backend.
+const API_BASE_URL = '/api'; 
 
 function RegisterPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState(''); // ¡NUEVO: Estado para la confirmación de contraseña!
-    const [message, setMessage] = useState(''); // Para mostrar mensajes de éxito o error
-    const [error, setError] = useState(''); // Para mensajes de error específicos
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleRegister = async (e) => {
@@ -18,44 +22,52 @@ function RegisterPage() {
         setMessage('');
         setError('');
 
-        // --- Validación del frontend: Las contraseñas deben coincidir ---
+        // --- VALIDACIÓN DE CONTRASEÑA EN EL FRONTEND ---
+        if (password.length < 8) {
+            setError('La contraseña debe tener al menos 8 caracteres.');
+            return; // Detiene la ejecución si la validación falla
+        }
         if (password !== confirmPassword) {
             setError('Las contraseñas no coinciden.');
             return; // Detiene la ejecución si las contraseñas no coinciden
         }
+        // --- FIN VALIDACIÓN FRONTEND ---
 
         try {
+            // Se envía 'confirmPassword' al backend, ya que el backend también lo está validando.
+            // Esto corrige el error 'Validation failed for argument [0]... on field 'confirmPassword': rejected value [null]'
             const response = await axios.post(`${API_BASE_URL}/auth/register`, {
                 username,
                 password,
-                confirmPassword // ¡NUEVO: Envía el campo confirmPassword al backend!
+                confirmPassword // AHORA SE INCLUYE EL CAMPO confirmPassword
             });
 
-            // Si la respuesta es exitosa (código 2xx)
-            setMessage(response.data); // Asume que el backend devuelve un String como "Usuario registrado exitosamente..."
+            // Asume que el backend devuelve un String como "Usuario registrado exitosamente..."
+            setMessage('¡Registro exitoso! Ahora puedes iniciar sesión.'); 
             setUsername('');
             setPassword('');
             setConfirmPassword(''); // Limpia también el campo de confirmación
-            alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
             navigate('/'); // Redirige al usuario a la página de inicio de sesión
         } catch (err) {
             console.error('Error al registrar usuario:', err);
             if (err.response) {
-                // El servidor respondió con un estado fuera del rango 2xx
-                // Si el backend devuelve un mensaje de error específico, lo usamos
-                if (err.response.data && typeof err.response.data === 'string') {
+                // Si el backend devuelve un objeto de errores de validación (como { password: "mensaje" })
+                if (err.response.data && typeof err.response.data === 'object') {
+                    // Puedes unir todos los mensajes de error en uno solo o mostrarlos por campo
+                    const backendErrors = Object.values(err.response.data).join('; ');
+                    setError(backendErrors);
+                }
+                // Si el backend devuelve un mensaje de error específico en el cuerpo de la respuesta
+                else if (err.response.data && typeof err.response.data === 'string') {
                     setError(err.response.data);
                 } else if (err.response.data && err.response.data.message) {
-                    // Si el backend devuelve un objeto de error con un campo 'message'
                     setError(err.response.data.message);
                 } else {
                     setError(`Error al registrar usuario: ${err.response.status} ${err.response.statusText}`);
                 }
             } else if (err.request) {
-                // La solicitud fue hecha pero no se recibió respuesta (ej. backend no está corriendo)
                 setError('No se pudo conectar con el servidor. Verifica que el backend esté corriendo.');
             } else {
-                // Algo más causó el error (ej. error en la configuración de Axios)
                 setError('Error desconocido al registrar usuario.');
             }
         }
@@ -85,7 +97,7 @@ function RegisterPage() {
                         required
                     />
                 </div>
-                {/* ¡NUEVO: Campo para confirmar contraseña! */}
+                {/* Campo para confirmar contraseña */}
                 <div className="form-group">
                     <label htmlFor="reg-confirm-password">Confirmar Contraseña:</label>
                     <input
@@ -96,11 +108,10 @@ function RegisterPage() {
                         required
                     />
                 </div>
-                {/* Aseguramos que el botón ocupe todo el ancho del formulario */}
                 <button type="submit" style={{ width: '100%' }}>Registrar</button>
             </form>
             {message && <p className="success-message">{message}</p>}
-            {error && <p className="error-message">{error}</p>}
+            {error && <p className="error-message">{error}</p>} {/* Muestra el error aquí */}
             <p className="login-link">
                 ¿Ya tienes una cuenta? <Link to="/">Inicia Sesión</Link>
             </p>

@@ -1,0 +1,65 @@
+# docker-compose.yml en la raíz de vini-mompox-platform
+version: '3.8' # Versión de la especificación de Docker Compose
+
+services:
+  # --- Servicio de la Base de Datos PostgreSQL ---
+  products-db:
+    image: postgres:16-alpine # Usa una imagen oficial de PostgreSQL (versión 16, ligera)
+    container_name: products-db-container # Nombre amigable para tu contenedor de la DB
+    environment:
+      POSTGRES_DB: vinomompox_products_db # Nombre de la base de datos a crear
+      POSTGRES_USER: postgres           # Usuario de la base de datos
+      POSTGRES_PASSWORD: Mompox2025     # Contraseña del usuario (¡cambia en producción!)
+    ports:
+      - "5432:5432" # Mapea el puerto 5432 del contenedor al puerto 5432 de tu máquina local
+    volumes:
+      # Esto persiste los datos de la DB para que no se pierdan al detener/eliminar el contenedor
+      - products-db-data:/var/lib/postgresql/data
+    healthcheck: # Una comprobación para saber cuándo la DB está lista para aceptar conexiones
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vinomompox_products_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network # Asigna este servicio a nuestra red interna
+
+  # --- Servicio del Backend (Products Service - Spring Boot) ---
+  products-service:
+    build: ./products-service # Indica a Docker Compose que construya la imagen desde la carpeta 'products-service'
+    container_name: vinomompox-products-app # Nombre amigable para tu contenedor del backend
+    ports:
+      - "8081:8081" # Mapea el puerto 8081 del contenedor (donde escucha Spring Boot) a tu máquina
+    environment:
+      # Sobreescribe la URL de la base de datos para que apunte al servicio 'products-db' en la red de Docker Compose
+      SPRING_DATASOURCE_URL: jdbc:postgresql://products-db:5432/vinomompox_products_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Mompox2025
+    depends_on: # Asegura que la DB inicie y esté saludable antes de intentar iniciar el backend
+      products-db:
+        condition: service_healthy
+    networks:
+      - app-network # Asigna este servicio a nuestra red interna
+
+  # --- Servicio del Frontend (React, Angular, Vue.js) ---
+  frontend-app:
+    build: ./products-frontend # Indica a Docker Compose que construya la imagen desde la carpeta 'frontend'
+    container_name: vinomompox-frontend-app # Nombre amigable para tu contenedor del frontend
+    ports:
+      - "3000:80" # Mapea el puerto 80 del contenedor (donde escucha Nginx) al puerto 80 de tu máquina
+                # Esto permite acceder a tu frontend vía http://localhost
+      # - "443:443" # Descomenta si planeas usar HTTPS más adelante
+    depends_on: # El frontend depende del backend para hacer llamadas a la API
+      products-service:
+        condition: service_started # Solo necesita que el backend esté iniciado, no que esté "healthy" por la DB
+    networks:
+      - app-network # Asigna este servicio a nuestra red interna
+
+# --- Definiciones de Volúmenes y Redes ---
+volumes:
+  # Volumen para persistir los datos de la base de datos
+  products-db-data:
+
+networks:
+  # Red interna compartida por todos tus servicios para que puedan comunicarse entre sí
+  app-network:
+    driver: bridge
